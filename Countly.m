@@ -458,11 +458,16 @@
 	NSString *appHost;
 #if TARGET_OS_IPHONE
 	UIBackgroundTaskIdentifier bgTask_;
+    UIApplication *_app;
 #endif
 }
 
 @property (nonatomic, copy) NSString *appKey;
 @property (nonatomic, copy) NSString *appHost;
+
+#if TARGET_OS_IPHONE
+@property (nonatomic, assign) UIApplication *app;
+#endif
 
 @end
 
@@ -472,6 +477,10 @@ static ConnectionQueue *s_sharedConnectionQueue = nil;
 
 @synthesize appKey;
 @synthesize appHost;
+
+#if TARGET_OS_IPHONE
+@synthesize app = _app;
+#endif
 
 + (ConnectionQueue *)sharedInstance
 {
@@ -503,7 +512,7 @@ static ConnectionQueue *s_sharedConnectionQueue = nil;
     if (connection_ != nil || bgTask_ != UIBackgroundTaskInvalid || [queue_ count] == 0)
         return;
 
-    UIApplication *app = [UIApplication sharedApplication];
+    UIApplication *app = self.app;
     bgTask_ = [app beginBackgroundTaskWithExpirationHandler:^{
 		[app endBackgroundTask:bgTask_];
 		bgTask_ = UIBackgroundTaskInvalid;
@@ -568,7 +577,7 @@ static ConnectionQueue *s_sharedConnectionQueue = nil;
 	COUNTLY_LOG(@"ok -> %@", [queue_ objectAtIndex:0]);
     
 #if TARGET_OS_IPHONE
-    UIApplication *app = [UIApplication sharedApplication];
+    UIApplication *app = self.app;
     if (bgTask_ != UIBackgroundTaskInvalid)
     {
         [app endBackgroundTask:bgTask_];
@@ -588,7 +597,7 @@ static ConnectionQueue *s_sharedConnectionQueue = nil;
 	COUNTLY_LOG(@"error -> %@: %@", [queue_ objectAtIndex:0], err);
 
 #if TARGET_OS_IPHONE
-    UIApplication *app = [UIApplication sharedApplication];
+    UIApplication *app = self.app;
     if (bgTask_ != UIBackgroundTaskInvalid)
     {
         [app endBackgroundTask:bgTask_];
@@ -641,6 +650,10 @@ static Countly *s_sharedCountly = nil;
 
 @synthesize updateInterval = _updateInterval;
 
+#if TARGET_OS_IPHONE
+@synthesize app = _app;
+#endif
+
 + (Countly *)sharedInstance
 {
 	if (s_sharedCountly == nil)
@@ -687,6 +700,9 @@ static Countly *s_sharedCountly = nil;
 	lastTime = CFAbsoluteTimeGetCurrent();
 	[[ConnectionQueue sharedInstance] setAppKey:appKey];
 	[[ConnectionQueue sharedInstance] setAppHost:appHost];
+#if TARGET_OS_IPHONE
+    [[ConnectionQueue sharedInstance] setApp:self.app];
+#endif
 	[[ConnectionQueue sharedInstance] beginSession];
 }
 

@@ -16,9 +16,16 @@
 	BOOL isSuspended;
     EventQueue *eventQueue;
     NSTimeInterval _updateInterval;
+#if TARGET_OS_IPHONE
+    UIApplication *_app;
+#endif
 }
 
 @property (nonatomic, assign) NSTimeInterval updateInterval;
+
+#if TARGET_OS_IPHONE
+@property (nonatomic, assign) UIApplication *app;
+#endif
 
 + (Countly *)sharedInstance;
 
